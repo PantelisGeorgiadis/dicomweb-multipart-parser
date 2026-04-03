@@ -33,7 +33,7 @@
     "static": true,
     "sort": true,
     "meta": {
-      "title": "dicom-dicer",
+      "title": "dicomweb-multipart-parser",
       "description": "Fast streaming multipart parser for DICOMweb STOW-RS payloads in Node.js",
       "keyword": "DICOM, DICOMweb, STOW-RS, multipart"
     },
@@ -44,7 +44,7 @@
     "scripts": [],
     "menu": {
       "Github repo": {
-        "href": "https://github.com/PantelisGeorgiadis/dicom-dicer",
+        "href": "https://github.com/PantelisGeorgiadis/dicomweb-multipart-parser",
         "target": "_blank",
         "class": "menu-item",
         "id": "repository"

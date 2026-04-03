@@ -1,22 +1,22 @@
 [![NPM version][npm-version-image]][npm-url] [![NPM downloads][npm-downloads-image]][npm-url] [![build][build-image]][build-url] [![MIT License][license-image]][license-url] 
 
-# dicom-dicer
+# dicomweb-multipart-parser
 
 A fast streaming multipart parser for DICOMweb STOW-RS payloads in Node.js.
 
-dicom-dicer is focused on multipart/related requests where each part is expected to be a DICOM instance. It is built for stream-first processing so you can parse large uploads without buffering entire requests in memory. This library was inspired by the [dicer][dicer-url] and [busboy][busboy-url] multipart parsers.
+dicomweb-multipart-parser is focused on multipart/related requests where each part is expected to be a DICOM instance. It is built for stream-first processing so you can parse large uploads without buffering entire requests in memory. This library was inspired by the [dicer][dicer-url] and [busboy][busboy-url] multipart parsers.
 
 ## Install
 
 ```bash
-npm install dicom-dicer
+npm install dicomweb-multipart-parser
 ```
 
 ## Quick Example
 
 ```js
 const http = require('http');
-const DicomDicer = require('dicom-dicer');
+const DicomwebMultipartParser = require('dicomweb-multipart-parser');
 
 http
 	.createServer((req, res) => {
@@ -26,9 +26,9 @@ http
 			return;
 		}
 
-		let dicer;
+		let dicomwebMultipartParser;
 		try {
-			dicer = new DicomDicer({
+			dicomwebMultipartParser = new DicomwebMultipartParser({
 				headers: req.headers,
 				ignorePartsWithoutDicomPreamble: false,
 			});
@@ -38,7 +38,7 @@ http
 			return;
 		}
 
-		dicer.on('part', (part) => {
+		dicomwebMultipartParser.on('part', (part) => {
 			// new part has arrived
 
 			part.on('header', (header) => {
@@ -60,29 +60,29 @@ http
 			});
 		});
 
-		dicer.on('error', (err) => {
+		dicomwebMultipartParser.on('error', (err) => {
 			res.writeHead(400);
 			res.end(err.message);
 		});
 
-		dicer.on('finish', () => {
+		dicomwebMultipartParser.on('finish', () => {
 			res.writeHead(200);
 			res.end();
 		});
 
-		req.pipe(dicer);
+		req.pipe(dicomwebMultipartParser);
 	})
 	.listen(8080);
 ```
 
 ## API
 
-dicom-dicer is a Writable stream.
+dicomweb-multipart-parser is a Writable stream.
 
 ### Constructor
 
 ```js
-const dicer = new DicomDicer(options);
+const dicomwebMultipartParser = new DicomwebMultipartParser(options);
 ```
 
 Options:
@@ -100,13 +100,13 @@ Constructor validation:
 - boundary parameter must be present
 - if content-type type parameter is present, it must be application/dicom
 
-### DicomDicer Events
+### DicomwebMultipartParser Events
 
 - part(stream): emitted when a new part is found
 - finish(): emitted when multipart parsing completes
 - error(err): emitted for parser-level errors
 
-### DicomDicer Methods
+### DicomwebMultipartParser Methods
 
 - reset(): resets parser internals so the instance can be reused
 
@@ -126,14 +126,14 @@ Each part is a Readable stream.
 
 ## License
 
-dicom-dicer is released under the MIT License.
+dicomweb-multipart-parser is released under the MIT License.
 
-[npm-url]: https://npmjs.org/package/dicom-dicer
-[npm-version-image]: https://img.shields.io/npm/v/dicom-dicer.svg?style=flat
-[npm-downloads-image]: http://img.shields.io/npm/dm/dicom-dicer.svg?style=flat
+[npm-url]: https://npmjs.org/package/dicomweb-multipart-parser
+[npm-version-image]: https://img.shields.io/npm/v/dicomweb-multipart-parser.svg?style=flat
+[npm-downloads-image]: http://img.shields.io/npm/dm/dicomweb-multipart-parser.svg?style=flat
 
-[build-url]: https://github.com/PantelisGeorgiadis/dicom-dicer/actions/workflows/build.yml
-[build-image]: https://github.com/PantelisGeorgiadis/dicom-dicer/actions/workflows/build.yml/badge.svg?branch=master
+[build-url]: https://github.com/PantelisGeorgiadis/dicomweb-multipart-parser/actions/workflows/build.yml
+[build-image]: https://github.com/PantelisGeorgiadis/dicomweb-multipart-parser/actions/workflows/build.yml/badge.svg?branch=master
 
 [license-image]: https://img.shields.io/badge/license-MIT-blue.svg?style=flat
 [license-url]: LICENSE.txt

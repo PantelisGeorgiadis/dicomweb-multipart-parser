@@ -54,10 +54,10 @@ const B_ONEDASH = Buffer.from('-');
 const B_CRLF = Buffer.from('\r\n');
 const EMPTY_FN = () => {};
 
-//#region DicomDicer
-class DicomDicer extends Writable {
+//#region DicomwebMultipartParser
+class DicomwebMultipartParser extends Writable {
   /**
-   * Creates an instance of DicomDicer.
+   * Creates an instance of DicomwebMultipartParser.
    * @constructor
    * @param {Object} opts - Configuration options.
    * @param {Object} opts.headers - HTTP headers.
@@ -181,7 +181,7 @@ class DicomDicer extends Writable {
   }
 
   /**
-   * Pushes data into the DicomDicer for processing.
+   * Pushes data into the DicomwebMultipartParser for processing.
    * This method is used to feed data into the parser.
    * @method
    */
@@ -420,7 +420,7 @@ class DicomDicer extends Writable {
   }
 
   /**
-   * Unpauses the DicomDicer if it is currently paused.
+   * Unpauses the DicomwebMultipartParser if it is currently paused.
    * If a callback is waiting to be called when unpaused,
    * it will be called after unpausing.
    * @method
@@ -669,5 +669,5 @@ class DicomDicer extends Writable {
 //#endregion
 
 //#region Exports
-module.exports = DicomDicer;
+module.exports = DicomwebMultipartParser;
 //#endregion

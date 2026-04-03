@@ -1,5 +1,5 @@
-const DicomDicer = require('./DicomDicer');
+const DicomwebMultipartParser = require('./DicomwebMultipartParser');
 
 //#region Exports
-module.exports = DicomDicer;
+module.exports = DicomwebMultipartParser;
 //#endregion

@@ -1,4 +1,4 @@
-const DicomDicer = require('./../src/DicomDicer');
+const DicomwebMultipartParser = require('./../src/DicomwebMultipartParser');
 
 const { PromiseSocket } = require('promise-socket');
 const http = require('http');
@@ -71,9 +71,9 @@ async function createAndUploadDicomPart10(pSocket, width, height, bits, boundary
   await pSocket.write(`\r\n`);
 }
 
-describe('DicomDicer Integration', () => {
+describe('DicomwebMultipartParser Integration', () => {
   it('should correctly perform basic multipart parsing', async () => {
-    const port = 3000;
+    const port = 3030;
     const boundary = guid();
 
     let partCount = 0;
@@ -82,8 +82,8 @@ describe('DicomDicer Integration', () => {
       .createServer((req, res) => {
         let m;
         if (req.method === 'POST' && req.url === '/studies') {
-          const dicomDicer = new DicomDicer({ headers: req.headers });
-          dicomDicer.on('part', (dicomPart) => {
+          const dicomwebMultipartParser = new DicomwebMultipartParser({ headers: req.headers });
+          dicomwebMultipartParser.on('part', (dicomPart) => {
             const chunks = [];
             dicomPart.on('header', (header) => {
               console.log('Received part headers:');
@@ -103,14 +103,14 @@ describe('DicomDicer Integration', () => {
               console.error(`Error in part: ${err.message}`);
             });
           });
-          dicomDicer.on('finish', () => {
+          dicomwebMultipartParser.on('finish', () => {
             console.log('Finished processing all parts');
             expect(partCount).to.equal(4);
 
             res.writeHead(200);
             res.end();
           });
-          req.pipe(dicomDicer);
+          req.pipe(dicomwebMultipartParser);
         }
       })
       .listen(port);

@@ -1,4 +1,4 @@
-const DicomDicer = require('./../src/DicomDicer');
+const DicomwebMultipartParser = require('./../src/DicomwebMultipartParser');
 
 const chai = require('chai');
 const expect = chai.expect;
@@ -62,9 +62,9 @@ function writeInChunks(stream, buffer, chunkSize) {
   });
 }
 
-describe('DicomDicer', () => {
+describe('DicomwebMultipartParser', () => {
   function createParser() {
-    return new DicomDicer({
+    return new DicomwebMultipartParser({
       headers: {
         'content-type': 'multipart/related; type=application/dicom; boundary=internal-test',
       },
@@ -72,8 +72,8 @@ describe('DicomDicer', () => {
   }
 
   it('should parse a full Content-Type header line and lowercase tokens', () => {
-    const dicer = createParser();
-    const parsed = dicer._parseContentType(
+    const parser = createParser();
+    const parsed = parser._parseContentType(
       'Content-Type: MULTIPART/RELATED; BOUNDARY="abc"; TYPE="application/dicom"\r\n'
     );
 
@@ -88,33 +88,33 @@ describe('DicomDicer', () => {
   });
 
   it('should return undefined for empty parsed header value', () => {
-    const dicer = createParser();
-    expect(dicer._parseContentType('Content-Type:   \r\n')).to.equal(undefined);
+    const parser = createParser();
+    expect(parser._parseContentType('Content-Type:   \r\n')).to.equal(undefined);
   });
 
   it('should return undefined for malformed type and subtype forms', () => {
-    const dicer = createParser();
+    const parser = createParser();
 
-    expect(dicer._parseContentType('/related')).to.equal(undefined);
-    expect(dicer._parseContentType('multipart')).to.equal(undefined);
-    expect(dicer._parseContentType('multipart/')).to.equal(undefined);
-    expect(dicer._parseContentType('multipart/; boundary=x')).to.equal(undefined);
+    expect(parser._parseContentType('/related')).to.equal(undefined);
+    expect(parser._parseContentType('multipart')).to.equal(undefined);
+    expect(parser._parseContentType('multipart/')).to.equal(undefined);
+    expect(parser._parseContentType('multipart/; boundary=x')).to.equal(undefined);
   });
 
   it('should return undefined for malformed parameter separators and values', () => {
-    const dicer = createParser();
+    const parser = createParser();
 
-    expect(dicer._parseContentType('multipart/related boundary=x')).to.equal(undefined);
-    expect(dicer._parseContentType('multipart/related;   ')).to.equal(undefined);
-    expect(dicer._parseContentType('multipart/related; p?=1')).to.equal(undefined);
-    expect(dicer._parseContentType('multipart/related; charset')).to.equal(undefined);
-    expect(dicer._parseContentType('multipart/related; charset=')).to.equal(undefined);
-    expect(dicer._parseContentType('multipart/related; charset=; boundary=x')).to.equal(undefined);
+    expect(parser._parseContentType('multipart/related boundary=x')).to.equal(undefined);
+    expect(parser._parseContentType('multipart/related;   ')).to.equal(undefined);
+    expect(parser._parseContentType('multipart/related; p?=1')).to.equal(undefined);
+    expect(parser._parseContentType('multipart/related; charset')).to.equal(undefined);
+    expect(parser._parseContentType('multipart/related; charset=')).to.equal(undefined);
+    expect(parser._parseContentType('multipart/related; charset=; boundary=x')).to.equal(undefined);
   });
 
   it('should parse escaped quoted parameter values', () => {
-    const dicer = createParser();
-    const parsed = dicer._parseContentType(
+    const parser = createParser();
+    const parsed = parser._parseContentType(
       'multipart/related; boundary="ab\\\\cd\\\"ef"; type="application/dicom"'
     );
 
@@ -129,13 +129,13 @@ describe('DicomDicer', () => {
   });
 
   it('should return undefined for unterminated quoted parameter values', () => {
-    const dicer = createParser();
-    expect(dicer._parseContentType('multipart/related; boundary="abc')).to.equal(undefined);
+    const parser = createParser();
+    expect(parser._parseContentType('multipart/related; boundary="abc')).to.equal(undefined);
   });
 
   it('should allow trailing whitespace after parameters', () => {
-    const dicer = createParser();
-    const parsed = dicer._parseContentType(
+    const parser = createParser();
+    const parsed = parser._parseContentType(
       'multipart/related; boundary=test-boundary; type=application/dicom   \r\n\t'
     );
 
@@ -150,23 +150,25 @@ describe('DicomDicer', () => {
   });
 
   it('should throw when headers are missing', () => {
-    expect(() => new DicomDicer()).to.throw('Headers are required');
+    expect(() => new DicomwebMultipartParser()).to.throw('Headers are required');
   });
 
   it('should throw when content-type header is missing', () => {
-    expect(() => new DicomDicer({ headers: {} })).to.throw('Content-Type header is required');
+    expect(() => new DicomwebMultipartParser({ headers: {} })).to.throw(
+      'Content-Type header is required'
+    );
   });
 
   it('should throw when content-type is not multipart/related', () => {
-    expect(() => new DicomDicer({ headers: { 'content-type': 'application/dicom' } })).to.throw(
-      'Content-Type must be multipart/related'
-    );
+    expect(
+      () => new DicomwebMultipartParser({ headers: { 'content-type': 'application/dicom' } })
+    ).to.throw('Content-Type must be multipart/related');
   });
 
   it('should throw when boundary parameter is missing', () => {
     expect(
       () =>
-        new DicomDicer({
+        new DicomwebMultipartParser({
           headers: {
             'content-type': 'multipart/related; type=application/dicom',
           },
@@ -177,7 +179,7 @@ describe('DicomDicer', () => {
   it('should throw when type parameter is not application/dicom', () => {
     expect(
       () =>
-        new DicomDicer({
+        new DicomwebMultipartParser({
           headers: {
             'content-type': 'multipart/related; type=text/plain; boundary=abc',
           },
@@ -187,7 +189,7 @@ describe('DicomDicer', () => {
 
   it('should emit header and full payload for a valid DICOM part', async () => {
     const boundary = 'test-boundary-1';
-    const dicer = new DicomDicer({
+    const parser = new DicomwebMultipartParser({
       headers: {
         'content-type': `multipart/related; type=application/dicom; boundary=${boundary}`,
       },
@@ -205,7 +207,7 @@ describe('DicomDicer', () => {
     let gotHeader = false;
     const dataChunks = [];
 
-    dicer.on('part', (part) => {
+    parser.on('part', (part) => {
       partCount += 1;
 
       part.on('header', (header) => {
@@ -218,7 +220,7 @@ describe('DicomDicer', () => {
       });
     });
 
-    await writeInChunks(dicer, multipart, 17);
+    await writeInChunks(parser, multipart, 17);
 
     expect(partCount).to.equal(1);
     expect(gotHeader).to.equal(true);
@@ -227,7 +229,7 @@ describe('DicomDicer', () => {
 
   it('should emit part error for missing part content-type header', async () => {
     const boundary = 'test-boundary-2';
-    const dicer = new DicomDicer({
+    const parser = new DicomwebMultipartParser({
       headers: {
         'content-type': `multipart/related; type=application/dicom; boundary=${boundary}`,
       },
@@ -242,18 +244,18 @@ describe('DicomDicer', () => {
 
     const partErrors = [];
 
-    dicer.on('part', (part) => {
+    parser.on('part', (part) => {
       part.on('error', (err) => partErrors.push(err.message));
     });
 
-    await writeInChunks(dicer, multipart, 32);
+    await writeInChunks(parser, multipart, 32);
 
     expect(partErrors).to.deep.equal(['Missing Content-Type header in part. Ignoring part...']);
   });
 
   it('should emit part error for unexpected part content-type', async () => {
     const boundary = 'test-boundary-3';
-    const dicer = new DicomDicer({
+    const parser = new DicomwebMultipartParser({
       headers: {
         'content-type': `multipart/related; type=application/dicom; boundary=${boundary}`,
       },
@@ -268,11 +270,11 @@ describe('DicomDicer', () => {
 
     const partErrors = [];
 
-    dicer.on('part', (part) => {
+    parser.on('part', (part) => {
       part.on('error', (err) => partErrors.push(err.message));
     });
 
-    await writeInChunks(dicer, multipart, 64);
+    await writeInChunks(parser, multipart, 64);
 
     expect(partErrors).to.deep.equal([
       'Unexpected part Content-Type: application/json. Ignoring part...',
@@ -281,7 +283,7 @@ describe('DicomDicer', () => {
 
   it('should ignore invalid preamble when ignorePartsWithoutDicomPreamble is true', async () => {
     const boundary = 'test-boundary-4';
-    const dicer = new DicomDicer({
+    const parser = new DicomwebMultipartParser({
       headers: {
         'content-type': `multipart/related; type=application/dicom; boundary=${boundary}`,
       },
@@ -298,14 +300,14 @@ describe('DicomDicer', () => {
     const partErrors = [];
     let dataBytes = 0;
 
-    dicer.on('part', (part) => {
+    parser.on('part', (part) => {
       part.on('error', (err) => partErrors.push(err.message));
       part.on('data', (chunk) => {
         dataBytes += chunk.length;
       });
     });
 
-    await writeInChunks(dicer, multipart, 9);
+    await writeInChunks(parser, multipart, 9);
 
     expect(partErrors).to.deep.equal([
       'Part does not have a valid DICOM preamble. Ignoring part...',
@@ -315,7 +317,7 @@ describe('DicomDicer', () => {
 
   it('should pass through valid preamble when ignorePartsWithoutDicomPreamble is true', async () => {
     const boundary = 'test-boundary-5';
-    const dicer = new DicomDicer({
+    const parser = new DicomwebMultipartParser({
       headers: {
         'content-type': `multipart/related; type=application/dicom; boundary=${boundary}`,
       },
@@ -332,11 +334,11 @@ describe('DicomDicer', () => {
 
     const chunks = [];
 
-    dicer.on('part', (part) => {
+    parser.on('part', (part) => {
       part.on('data', (chunk) => chunks.push(chunk));
     });
 
-    await writeInChunks(dicer, multipart, 5);
+    await writeInChunks(parser, multipart, 5);
 
     expect(Buffer.concat(chunks)).to.deep.equal(body);
   });

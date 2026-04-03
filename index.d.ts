@@ -5,8 +5,8 @@ import { Writable, WritableOptions, Readable } from 'stream';
 /** Parsed MIME headers for a part: each key maps to an array of values. */
 declare type PartHeaders = Record<string, string[]>;
 
-/** Options accepted by the DicomDicer constructor. */
-declare interface DicomDicerOptions extends WritableOptions {
+/** Options accepted by the DicomwebMultipartParser constructor. */
+declare interface DicomwebMultipartParserOptions extends WritableOptions {
   /** HTTP headers object. Must include a `content-type` field. */
   headers: Record<string, string> & { 'content-type': string };
   /**
@@ -39,8 +39,8 @@ declare class PartStream extends Readable {
 }
 
 /** Streaming MIME multipart/related parser for DICOM STOW-RS. */
-declare class DicomDicer extends Writable {
-  constructor(opts: DicomDicerOptions);
+declare class DicomwebMultipartParser extends Writable {
+  constructor(opts: DicomwebMultipartParserOptions);
 
   /** Resets internal state so the instance can be re-used. */
   reset(): void;
@@ -52,8 +52,8 @@ declare class DicomDicer extends Writable {
   on(event: string | symbol, listener: (...args: unknown[]) => void): this;
 }
 
-declare namespace DicomDicer {
-  export { DicomDicerOptions, PartHeaders, PartStream };
+declare namespace DicomwebMultipartParser {
+  export { DicomwebMultipartParserOptions, PartHeaders, PartStream };
 }
 
-export = DicomDicer;
+export = DicomwebMultipartParser;

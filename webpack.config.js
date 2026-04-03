@@ -28,7 +28,7 @@ module.exports = {
   mode: 'production',
   context,
   entry: {
-    dicomDicer: './index.js',
+    dicomwebMultipartParser: './index.js',
   },
   target: 'node',
   output: {
