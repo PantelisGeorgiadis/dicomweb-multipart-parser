@@ -1,6 +1,6 @@
 {
   "name": "dicomweb-multipart-parser",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Fast streaming multipart parser for DICOMweb STOW-RS payloads in Node.js",
   "main": "build/dicomweb-multipart-parser.min.js",
   "module": "build/dicomweb-multipart-parser.min.js",

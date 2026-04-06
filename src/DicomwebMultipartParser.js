@@ -46,6 +46,9 @@ const QDTEXT = [
 ];
 Object.freeze(QDTEXT);
 
+const WHITELISTED_PART_CONTENT_TYPE_HEADERS = ['application/dicom', 'application/octet-stream'];
+Object.freeze(WHITELISTED_PART_CONTENT_TYPE_HEADERS);
+
 const DASH = 45;
 const DICOM_PREAMBLE_LENGTH = 128;
 const DICOM_PREFIX_LENGTH = DICOM_PREAMBLE_LENGTH + 4;
@@ -127,7 +130,7 @@ class DicomwebMultipartParser extends Writable {
         return;
       }
       const contentTypeValue = contentTypeKey[0].trim().toLowerCase();
-      if (contentTypeValue !== 'application/dicom') {
+      if (!WHITELISTED_PART_CONTENT_TYPE_HEADERS.includes(contentTypeValue)) {
         this._part.emit(
           'error',
           new Error(`Unexpected part Content-Type: ${contentTypeValue}. Ignoring part...`)
